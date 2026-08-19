@@ -6,14 +6,17 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         brand: {
-          bg: "#F8F9FA",
-          text: "#1A1C20",
-          muted: "#6B7280",
-          accent: "#4F46E5",
+          bg: "var(--brand-bg)",
+          text: "var(--brand-text)",
+          muted: "var(--brand-muted)",
+          accent: "var(--brand-accent)",
+          surface: "var(--brand-surface)",
+          border: "var(--brand-border)",
           positive: "#10B981",
           neutral: "#D1D5DB",
           negative: "#EF4444",
@@ -25,6 +28,7 @@ const config: Config = {
       },
       boxShadow: {
         'none': 'none',
+        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
       },
       borderRadius: {
         'sm': '2px',

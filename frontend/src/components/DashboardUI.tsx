@@ -70,7 +70,7 @@ export default function DashboardUI() {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center border-2 border-dashed border-brand-text/20 bg-white p-20 text-center transition hover:border-brand-accent/50">
+      <div className="flex flex-col items-center justify-center border-2 border-dashed border-brand-border bg-brand-surface p-20 text-center transition hover:border-brand-accent/50 shadow-soft">
         <h3 className="mb-4 text-4xl font-serif text-brand-text">Drop a conversation here.</h3>
         <p className="mb-10 text-sm text-brand-muted">.txt transcript files only.</p>
         
@@ -85,7 +85,7 @@ export default function DashboardUI() {
         <div className="flex flex-col items-center gap-4">
           <label 
             htmlFor="file-upload" 
-            className="cursor-pointer border border-brand-text/10 px-8 py-3 text-sm font-semibold text-brand-text hover:bg-brand-bg transition"
+            className="cursor-pointer border border-brand-border px-8 py-3 text-sm font-semibold text-brand-text hover:bg-brand-bg transition"
           >
             {file ? file.name : "Select File"}
           </label>
@@ -128,10 +128,10 @@ export default function DashboardUI() {
       <div className="grid gap-8 md:grid-cols-3">
         
         {/* Executive Summary (Human element serif) */}
-        <div className="md:col-span-2 border border-brand-text/10 bg-white p-8">
+        <div className="md:col-span-2 border border-brand-border bg-brand-surface p-8 shadow-soft">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Conversation Summary</h2>
-            <span className={`px-4 py-1 text-xs font-semibold border border-brand-text/10
+            <span className={`px-4 py-1 text-xs font-semibold border border-brand-border
               ${data.overall_sentiment === 'Positive' ? 'text-brand-positive' : 
                 data.overall_sentiment === 'Negative' ? 'text-brand-negative' : 
                 'text-brand-muted'}`}>
@@ -144,7 +144,7 @@ export default function DashboardUI() {
           
           <div className="flex flex-wrap gap-2 mt-4">
             {data.emotions.map((emotion, i) => (
-              <span key={i} className="border border-brand-text/10 px-3 py-1 text-xs text-brand-text">
+              <span key={i} className="border border-brand-border px-3 py-1 text-xs text-brand-text">
                 {emotion}
               </span>
             ))}
@@ -152,7 +152,7 @@ export default function DashboardUI() {
         </div>
 
         {/* Sentiment Chart */}
-        <div className="border border-brand-text/10 bg-white p-8 flex flex-col">
+        <div className="border border-brand-border bg-brand-surface p-8 flex flex-col shadow-soft">
           <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-6">Sentiment Flow</h2>
           <div className="flex-1 min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -164,7 +164,7 @@ export default function DashboardUI() {
                   innerRadius={0}
                   outerRadius={80}
                   dataKey="value"
-                  stroke="#fff"
+                  stroke="var(--brand-surface)"
                   strokeWidth={2}
                 >
                   {chartData.map((entry, index) => (
@@ -172,8 +172,8 @@ export default function DashboardUI() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#1A1C20', borderColor: '#1A1C20', color: '#fff', borderRadius: '0px' }}
-                  itemStyle={{ color: '#F8F9FA' }}
+                  contentStyle={{ backgroundColor: 'var(--brand-text)', borderColor: 'var(--brand-text)', color: 'var(--brand-bg)', borderRadius: '0px' }}
+                  itemStyle={{ color: 'var(--brand-bg)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -184,7 +184,7 @@ export default function DashboardUI() {
       {/* KPIs */}
       <div className="grid gap-8 md:grid-cols-3">
         {Object.entries(data.kpis).map(([key, value]) => (
-          <div key={key} className="border border-brand-text/10 bg-white p-8">
+          <div key={key} className="border border-brand-border bg-brand-surface p-8 shadow-soft">
             <h3 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-4">{key.replace(/_/g, ' ')}</h3>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-bold text-brand-text">{value}</span>
@@ -201,7 +201,7 @@ export default function DashboardUI() {
       </div>
 
       {/* Thought Process */}
-      <div className="border border-brand-text/10 bg-brand-bg p-8">
+      <div className="border border-brand-border bg-brand-bg p-8 shadow-soft">
         <h2 className="text-xs font-semibold text-brand-text uppercase tracking-widest mb-4">Agentic Rationale</h2>
         <p className="text-sm text-brand-muted leading-relaxed font-mono">
           {data.thought_process}
@@ -209,11 +209,11 @@ export default function DashboardUI() {
       </div>
 
       {/* Sentence Breakdown */}
-      <div className="border border-brand-text/10 bg-white p-8">
+      <div className="border border-brand-border bg-brand-surface p-8 shadow-soft">
         <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-6">Line-by-Line Breakdown</h2>
         <div className="space-y-0">
           {data.sentence_analysis.map((item, i) => (
-            <div key={i} className="flex items-start gap-6 border-b border-brand-text/10 last:border-0 py-4">
+            <div key={i} className="flex items-start gap-6 border-b border-brand-border last:border-0 py-4">
               <div className={`mt-2 h-2 w-2 flex-shrink-0
                 ${item.sentiment === 'Positive' ? 'bg-brand-positive' : 
                   item.sentiment === 'Negative' ? 'bg-brand-negative' : 

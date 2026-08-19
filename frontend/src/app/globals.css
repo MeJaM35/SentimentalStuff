@@ -5,11 +5,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-  --background: #F8F9FA;
-  --foreground: #1A1C20;
+  --brand-bg: #F8F9FA;
+  --brand-text: #1A1C20;
+  --brand-muted: #6B7280;
+  --brand-accent: #4F46E5;
+  --brand-surface: #FFFFFF;
+  --brand-border: rgba(26, 28, 32, 0.1);
+}
+
+.dark {
+  --brand-bg: #1A1C20;
+  --brand-text: #F8F9FA;
+  --brand-muted: #9CA3AF;
+  --brand-accent: #6366F1;
+  --brand-surface: #272A30;
+  --brand-border: rgba(248, 249, 250, 0.1);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--brand-text);
+  background: var(--brand-bg);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

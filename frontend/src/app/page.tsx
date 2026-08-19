@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -8,6 +8,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +51,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white p-10 border border-brand-text/10">
-        <h1 className="mb-2 text-4xl font-serif text-brand-text">SentimentalStuff</h1>
+      <div className="w-full max-w-md bg-brand-surface p-10 border border-brand-border shadow-soft">
+        <h1 className="mb-2 text-4xl font-serif text-brand-text">Sentimental Stuff</h1>
         <p className="mb-10 text-sm text-brand-muted">Enter your credentials to access the workspace.</p>
         
         <form onSubmit={handleLogin} className="space-y-6">
@@ -57,7 +63,7 @@ export default function LoginPage() {
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-brand-bg border border-brand-text/10 p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
+              className="w-full bg-brand-bg border border-brand-border p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
               placeholder="agent@company.com" 
             />
           </div>
@@ -68,7 +74,7 @@ export default function LoginPage() {
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-brand-bg border border-brand-text/10 p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
+              className="w-full bg-brand-bg border border-brand-border p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
               placeholder="••••••••" 
             />
           </div>
