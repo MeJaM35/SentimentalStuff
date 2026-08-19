@@ -1,11 +1,13 @@
 import os
 import json
-import typing_extensions as typing
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
+from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+
+import instructor
+from litellm import completion
 
 from auth import (
     Base, engine, fastapi_users, auth_backend, 
@@ -16,11 +18,10 @@ from auth import (
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
 load_dotenv(env_path)
 
-# Configure Gemini API
-api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
-model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+# Configure LiteLLM / Instructor
+client = instructor.from_litellm(completion, mode=instructor.Mode.JSON)
+generation_model_name = os.getenv("GEMINI_GENERATION_MODEL", "groq/openai/gpt-oss-20b")
+eval_model_name = os.getenv("GEMINI_EVAL_MODEL", "groq/openai/gpt-oss-120b")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,37 +32,31 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Sentiment Analyzer API", lifespan=lifespan)
 
-# Add CORS Middleware to allow Next.js frontend to communicate with FastAPI
+# Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For POC only. In prod, use ["http://localhost:3000"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Setup Auth Routes (/auth/jwt/login, /auth/register)
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend), 
-    prefix="/auth/jwt", 
-    tags=["auth"]
-)
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
+# Setup Auth Routes
+app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"])
+app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
+app.include_router(fastapi_users.get_users_router(UserRead, UserCreate), prefix="/users", tags=["users"])
 
-class SentenceAnalysis(typing.TypedDict):
+# Pydantic Schemas for Strict JSON Validation via Instructor
+class SentenceAnalysis(BaseModel):
     sentence: str
     sentiment: str
 
-class KPIs(typing.TypedDict):
-    Agent_Empathy_Score: int
-    Customer_Frustration_Index: int
-    Resolution_Likelihood: int
+class KPIs(BaseModel):
+    Agent_Empathy_Score: int = Field(ge=1, le=10)
+    Customer_Frustration_Index: int = Field(ge=1, le=10)
+    Resolution_Likelihood: int = Field(ge=1, le=10)
 
-class AnalysisResult(typing.TypedDict):
+class AnalysisResult(BaseModel):
     thought_process: str
     overall_sentiment: str
     summary: str
@@ -69,56 +64,107 @@ class AnalysisResult(typing.TypedDict):
     sentence_analysis: list[SentenceAnalysis]
     kpis: KPIs
 
+class EvalResult(BaseModel):
+    score: int = Field(ge=1, le=10)
+    feedback: str
+
 @app.post("/analyze")
 async def analyze_transcript(
     file: UploadFile = File(...),
-    user: User = Depends(current_active_user)
+    user: User = Depends(current_active_user),
+    threshold: int = Form(default=7)
 ):
-    """
-    Protected endpoint implementing an Agentic architecture for transcript analysis.
-    Uses strict schema guardrails and Chain-of-Thought reasoning.
-    """
     if not file.filename.endswith(".txt"):
         raise HTTPException(status_code=400, detail="Only .txt files are allowed")
     
     content = await file.read()
     text = content.decode("utf-8")
     
-    # Improved Agentic Prompt with Guardrails
     system_prompt = """You are an elite Customer Experience (CX) AI Agent. 
 Your objective is to deeply analyze support transcripts and extract actionable intelligence.
 
 **Agent Directives:**
 1. **Chain of Thought**: You must first use the 'thought_process' field to internally reason about the customer's journey, the root cause of their issue, and the agent's de-escalation tactics.
-2. **KPI Derivation**: Base your KPI scores strictly on your thought process. 
-   - Agent_Empathy_Score (1-10): Did they validate feelings or sound robotic?
-   - Customer_Frustration_Index (1-10): Peak frustration level observed.
-   - Resolution_Likelihood (1-10): Is the issue definitively closed?
-3. **Guardrails**: Be highly objective. Do not hallucinate sentences that were not in the transcript for the 'sentence_analysis'.
-
-Analyze the following transcript:"""
+2. **KPI Derivation**: Base your KPI scores strictly on your thought process (1-10 scales).
+3. **Guardrails**: Be highly objective. Do not hallucinate sentences that were not in the transcript for the 'sentence_analysis'."""
 
     try:
-        model = genai.GenerativeModel(model_name)
+        max_retries = 3
+        current_attempt = 1
+        best_data = None
+        best_score = -1
+        feedback_history = ""
+        total_tokens = 0
+        total_cost = 0.0
         
-        # Guardrail: Enforce strict JSON schema at the API level
-        generation_config = genai.GenerationConfig(
-            response_mime_type="application/json",
-            response_schema=AnalysisResult,
-            temperature=0.1, # Low temperature for analytical consistency
-        )
+        while current_attempt <= max_retries:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Transcript:\n{text}"}
+            ]
+            if feedback_history:
+                messages.append({"role": "user", "content": f"CRITICAL FEEDBACK FROM PREVIOUS ATTEMPTS (Address these explicitly!):\n{feedback_history}"})
+                
+            response = client.chat.completions.create(
+                model=generation_model_name,
+                messages=messages,
+                response_model=AnalysisResult,
+                max_retries=2 # Instructor handles JSON schema retry automatically
+            )
+            
+            data = response.model_dump()
+            
+            # Extract usage if available via instructor's _raw_response, otherwise fallback
+            if hasattr(response, '_raw_response') and hasattr(response._raw_response, 'usage'):
+                total_tokens += response._raw_response.usage.total_tokens
+            else:
+                total_tokens += (len(text) // 4) + 1000 # Heuristic fallback
+                
+            print(f"--- ATTEMPT {current_attempt} RAW JSON TEXT ---", flush=True)
+            print(json.dumps(data, indent=2), flush=True)
+            print(f"--- END RAW JSON TEXT ---", flush=True)
+            
+            # Agentic Self-Evaluation
+            eval_messages = [
+                {"role": "system", "content": "You are a strict QA AI. Evaluate the following CX analysis of a transcript. Rate the analysis on a scale of 1 to 10 based on accuracy of the KPIs, quality of the summary, and depth of the thought process. If the score is less than 10, provide specific 'feedback' on what to improve."},
+                {"role": "user", "content": f"Transcript:\n{text}\n\nAnalysis:\n{json.dumps(data, indent=2)}"}
+            ]
+            
+            eval_response = client.chat.completions.create(
+                model=eval_model_name,
+                messages=eval_messages,
+                response_model=EvalResult,
+                max_retries=2
+            )
+            
+            if hasattr(eval_response, '_raw_response') and hasattr(eval_response._raw_response, 'usage'):
+                total_tokens += eval_response._raw_response.usage.total_tokens
+            else:
+                total_tokens += (len(text) // 4) + 500
+                
+            score = eval_response.score
+            feedback = eval_response.feedback
+            
+            if score > best_score:
+                best_score = score
+                best_data = data
+                
+            if threshold <= 0 or score >= threshold:
+                break
+                
+            feedback_history += f"Attempt {current_attempt} Score: {score}/10. Feedback: {feedback}\n"
+            current_attempt += 1
+            
+        # Simplified cost estimation for open source models on free platforms (~$0.15 per 1M tokens)
+        total_cost = (total_tokens / 1_000_000) * 0.15
         
-        response = model.generate_content(
-            [system_prompt, text],
-            generation_config=generation_config
-        )
+        best_data["eval_score"] = best_score
+        best_data["eval_iterations"] = min(current_attempt, max_retries)
+        best_data["total_tokens"] = total_tokens
+        best_data["total_cost"] = round(total_cost, 6)
         
-        # Because we used response_schema, the output is guaranteed to be valid JSON
-        data = json.loads(response.text)
-        return data
+        return best_data
         
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Guardrail Failure: Model failed to return valid JSON.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

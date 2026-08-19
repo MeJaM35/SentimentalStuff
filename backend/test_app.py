@@ -26,9 +26,15 @@ def run_test():
         token = login_res.json()["access_token"]
         print(f"Token obtained: {token[:20]}...")
 
-        print("\n3. Testing the Orchestration Logic (/analyze endpoint)...")
+        print("\n3. Testing User Profile Endpoint (/users/me)...")
         headers = {"Authorization": f"Bearer {token}"}
-        
+        profile_res = client.get("/users/me", headers=headers)
+        print("Profile response status:", profile_res.status_code)
+        if profile_res.status_code == 200:
+            print("Profile data:", profile_res.json())
+        else:
+            print("Profile failed:", profile_res.text)
+
         # Mock conversation transcript
         transcript = """
 Agent: Hello, thank you for calling support. How can I help you today?
@@ -41,17 +47,31 @@ Agent: I'm glad to hear that! Is there anything else I can assist you with today
 Customer: No, that's all. Thank you for your help.
 Agent: You're welcome. Have a wonderful rest of your day!
 """
-        
+
+        print("\n4. Testing /analyze endpoint (Evals DISABLED - threshold=0)...")
         files = {"file": ("conversation.txt", transcript, "text/plain")}
+        data = {"threshold": 0}
         
-        analyze_res = client.post("/analyze", headers=headers, files=files)
-        print("Analyze response status:", analyze_res.status_code)
-        
+        analyze_res = client.post("/analyze", headers=headers, files=files, data=data)
+        print("Analyze (Disabled) response status:", analyze_res.status_code)
         if analyze_res.status_code == 200:
-            print("\n--- FINAL AI DASHBOARD JSON OUTPUT ---")
-            print(json.dumps(analyze_res.json(), indent=2))
+            result = analyze_res.json()
+            print("Success! eval_score in output?", "eval_score" in result)
         else:
             print("Analyze failed:", analyze_res.text)
+            
+        print("\n5. Testing /analyze endpoint (Evals ENABLED - threshold=7)...")
+        # Must reset files tuple for requests
+        files = {"file": ("conversation.txt", transcript, "text/plain")}
+        data = {"threshold": 7}
+        
+        analyze_eval_res = client.post("/analyze", headers=headers, files=files, data=data)
+        print("Analyze (Enabled) response status:", analyze_eval_res.status_code)
+        if analyze_eval_res.status_code == 200:
+            print("\n--- FINAL AI DASHBOARD JSON OUTPUT (WITH QA JUDGEMENT) ---")
+            print(json.dumps(analyze_eval_res.json(), indent=2))
+        else:
+            print("Analyze failed:", analyze_eval_res.text)
 
 if __name__ == "__main__":
     run_test()

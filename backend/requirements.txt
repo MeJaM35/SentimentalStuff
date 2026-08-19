@@ -1,6 +1,8 @@
 fastapi[all]
 fastapi-users[sqlalchemy]
 aiosqlite
-google-generativeai
 python-dotenv
 python-multipart
+litellm
+instructor
+pydantic

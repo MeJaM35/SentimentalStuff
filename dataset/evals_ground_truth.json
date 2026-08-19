@@ -1,0 +1,26 @@
+[
+  {
+    "id": "eval_001_angry_resolved",
+    "transcript": "Agent: Hello, thank you for calling TechStream support. My name is Alex. How can I help you today?\nCustomer: Finally! I've been on hold for thirty minutes. You guys overcharged me by $50 this month and I want a refund right now. This is ridiculous!\nAgent: I am very sorry for the long wait and the unexpected charge on your bill. I understand why you are frustrated. Let me pull up your account and get this sorted out immediately. Can I have your account number?\nCustomer: It's 987654321. I'm telling you, if this isn't fixed today, I'm cancelling my subscription.\nAgent: I completely understand, and I apologize again for the inconvenience. Looking at your account, it seems a late fee was applied by mistake due to a glitch in our auto-pay system. I am waiving that $50 fee right now.\nCustomer: Well... okay. Are you sure it's removed?\nAgent: Yes, I have processed the refund. You should see the $50 back on your card in 3 to 5 business days, and I've also added a $10 credit to your next month's bill for the trouble.\nCustomer: Oh. Well, thank you. I appreciate you fixing it so fast.\nAgent: You're very welcome. I've noted the account to ensure this doesn't happen again. Is there anything else I can assist you with today?\nCustomer: No, that's all. Thank you, Alex.\nAgent: Have a great rest of your day!",
+    "expected_metrics": {
+      "overall_sentiment": "Neutral",
+      "kpis": {
+        "Agent_Empathy_Score_Minimum": 8,
+        "Customer_Frustration_Index_Maximum": 6,
+        "Resolution_Likelihood_Minimum": 9
+      }
+    }
+  },
+  {
+    "id": "eval_002_friendly_inquiry",
+    "transcript": "Agent: Hi there, welcome to CloudSync Sales. I'm Sarah, how can I assist you today?\nCustomer: Hi Sarah! I was looking at your enterprise plan on the website, and I had a few questions about the storage limits.\nAgent: I'd be happy to help with that! The enterprise plan comes with 10 terabytes of shared storage out of the box. How much storage are you currently using?\nCustomer: We are a small design agency, so we have a lot of large video files. We're currently sitting at about 8 terabytes, but we are growing fast.\nAgent: That's amazing to hear! For fast-growing teams, the 10TB is a great start. If you ever exceed that limit, we offer automatic scaling at just $5 per additional terabyte per month. You'll never be locked out from uploading.\nCustomer: Oh, that's incredibly helpful. Our current provider just freezes our account when we hit the limit, which halts our entire workflow.\nAgent: That sounds very frustrating! We designed our scaling specifically to prevent those kinds of bottlenecks. Would you like me to send you a link to start a 14-day free trial so your team can test the upload speeds?\nCustomer: Yes, please! That sounds perfect.\nAgent: Excellent, I've just emailed that to you. Let me know if you have any trouble setting it up.\nCustomer: Got it. Thanks so much for your help, Sarah!\nAgent: You're very welcome. Have a wonderful day!",
+    "expected_metrics": {
+      "overall_sentiment": "Positive",
+      "kpis": {
+        "Agent_Empathy_Score_Minimum": 7,
+        "Customer_Frustration_Index_Maximum": 2,
+        "Resolution_Likelihood_Minimum": 9
+      }
+    }
+  }
+]
