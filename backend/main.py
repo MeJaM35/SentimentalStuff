@@ -12,7 +12,8 @@ from auth import (
 )
 
 # Load environment variables from the root folder
-load_dotenv("../.env")
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+load_dotenv(env_path)
 
 # Configure Gemini API
 api_key = os.getenv("GEMINI_API_KEY")
