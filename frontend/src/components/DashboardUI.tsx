@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 type AnalysisData = {
@@ -18,9 +18,9 @@ type AnalysisData = {
 };
 
 const COLORS = {
-  Positive: "#10b981", // Emerald 500
-  Neutral: "#6b7280",  // Gray 500
-  Negative: "#ef4444"  // Red 500
+  Positive: "#10B981", // Sage Green
+  Neutral: "#D1D5DB",  // Sandstone
+  Negative: "#EF4444"  // Terracotta
 };
 
 export default function DashboardUI() {
@@ -70,10 +70,9 @@ export default function DashboardUI() {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/50 p-12 text-center">
-        <UploadCloud className="mb-4 h-12 w-12 text-zinc-500" />
-        <h3 className="mb-2 text-lg font-semibold text-white">Upload Conversation Transcript</h3>
-        <p className="mb-6 text-sm text-zinc-400">Only .txt files are supported for this POC.</p>
+      <div className="flex flex-col items-center justify-center border-2 border-dashed border-brand-text/20 bg-white p-20 text-center transition hover:border-brand-accent/50">
+        <h3 className="mb-4 text-4xl font-serif text-brand-text">Drop a conversation here.</h3>
+        <p className="mb-10 text-sm text-brand-muted">.txt transcript files only.</p>
         
         <input 
           type="file" 
@@ -82,26 +81,29 @@ export default function DashboardUI() {
           id="file-upload" 
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-        <label 
-          htmlFor="file-upload" 
-          className="cursor-pointer rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium hover:bg-zinc-700 transition mb-4"
-        >
-          {file ? file.name : "Select File"}
-        </label>
         
-        {file && (
-          <button 
-            onClick={handleUpload}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
+        <div className="flex flex-col items-center gap-4">
+          <label 
+            htmlFor="file-upload" 
+            className="cursor-pointer border border-brand-text/10 px-8 py-3 text-sm font-semibold text-brand-text hover:bg-brand-bg transition"
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? "Analyzing via Gemini AI..." : "Analyze Transcript"}
-          </button>
-        )}
+            {file ? file.name : "Select File"}
+          </label>
+
+          {file && (
+            <button 
+              onClick={handleUpload}
+              disabled={loading}
+              className="flex items-center gap-2 bg-brand-accent px-8 py-3 text-sm font-semibold text-white hover:bg-opacity-90 disabled:opacity-50 transition"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Analyzing sentiment..." : "Read Transcript"}
+            </button>
+          )}
+        </div>
         
         {error && (
-          <div className="mt-4 flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg">
+          <div className="mt-8 flex items-center gap-2 text-brand-negative text-sm">
             <AlertCircle className="h-4 w-4" />
             <span>{error}</span>
           </div>
@@ -110,7 +112,6 @@ export default function DashboardUI() {
     );
   }
 
-  // Calculate sentiment distribution for the pie chart
   const distribution = data.sentence_analysis.reduce((acc, curr) => {
     acc[curr.sentiment] = (acc[curr.sentiment] || 0) + 1;
     return acc;
@@ -122,34 +123,37 @@ export default function DashboardUI() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Summary Card */}
-        <div className="md:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">AI Executive Summary</h2>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold
-              ${data.overall_sentiment === 'Positive' ? 'bg-emerald-500/10 text-emerald-400' : 
-                data.overall_sentiment === 'Negative' ? 'bg-red-500/10 text-red-400' : 
-                'bg-zinc-500/10 text-zinc-400'}`}>
-              Overall: {data.overall_sentiment}
+    <div className="space-y-8">
+      {/* Top Row: AI Summary & Flow */}
+      <div className="grid gap-8 md:grid-cols-3">
+        
+        {/* Executive Summary (Human element serif) */}
+        <div className="md:col-span-2 border border-brand-text/10 bg-white p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Conversation Summary</h2>
+            <span className={`px-4 py-1 text-xs font-semibold border border-brand-text/10
+              ${data.overall_sentiment === 'Positive' ? 'text-brand-positive' : 
+                data.overall_sentiment === 'Negative' ? 'text-brand-negative' : 
+                'text-brand-muted'}`}>
+              {data.overall_sentiment}
             </span>
           </div>
-          <p className="text-zinc-300 text-sm leading-relaxed mb-6">{data.summary}</p>
+          <p className="text-brand-text text-xl font-serif leading-relaxed mb-8">
+            "{data.summary}"
+          </p>
           
-          <h3 className="text-sm font-medium text-zinc-400 mb-2">Detected Emotions:</h3>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-4">
             {data.emotions.map((emotion, i) => (
-              <span key={i} className="rounded-md bg-zinc-800 px-2 py-1 text-xs text-zinc-300 border border-zinc-700">
+              <span key={i} className="border border-brand-text/10 px-3 py-1 text-xs text-brand-text">
                 {emotion}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Chart Card */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm flex flex-col">
-          <h2 className="text-lg font-semibold text-white mb-2">Sentiment Flow</h2>
+        {/* Sentiment Chart */}
+        <div className="border border-brand-text/10 bg-white p-8 flex flex-col">
+          <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-6">Sentiment Flow</h2>
           <div className="flex-1 min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -157,19 +161,19 @@ export default function DashboardUI() {
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={5}
+                  innerRadius={0}
+                  outerRadius={80}
                   dataKey="value"
-                  stroke="none"
+                  stroke="#fff"
+                  strokeWidth={2}
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.Neutral} />
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff', borderRadius: '8px' }}
-                  itemStyle={{ color: '#e4e4e7' }}
+                  contentStyle={{ backgroundColor: '#1A1C20', borderColor: '#1A1C20', color: '#fff', borderRadius: '0px' }}
+                  itemStyle={{ color: '#F8F9FA' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -178,17 +182,17 @@ export default function DashboardUI() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3">
         {Object.entries(data.kpis).map(([key, value]) => (
-          <div key={key} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
-            <h3 className="text-sm font-medium text-zinc-400 mb-2">{key.replace(/_/g, ' ')}</h3>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-bold text-white">{value}</span>
-              <span className="text-zinc-500 mb-1">/ 10</span>
+          <div key={key} className="border border-brand-text/10 bg-white p-8">
+            <h3 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-4">{key.replace(/_/g, ' ')}</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold text-brand-text">{value}</span>
+              <span className="text-brand-muted font-serif italic">/ 10</span>
             </div>
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="mt-6 h-1 w-full bg-brand-bg">
               <div 
-                className="h-full bg-blue-500 rounded-full" 
+                className="h-full bg-brand-accent" 
                 style={{ width: `${(Number(value) / 10) * 100}%` }}
               />
             </div>
@@ -196,35 +200,35 @@ export default function DashboardUI() {
         ))}
       </div>
 
-      {/* Thought Process (CoT) */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-2">Agent Thought Process</h2>
-        <p className="text-sm text-zinc-400 italic leading-relaxed font-mono">
+      {/* Thought Process */}
+      <div className="border border-brand-text/10 bg-brand-bg p-8">
+        <h2 className="text-xs font-semibold text-brand-text uppercase tracking-widest mb-4">Agentic Rationale</h2>
+        <p className="text-sm text-brand-muted leading-relaxed font-mono">
           {data.thought_process}
         </p>
       </div>
 
       {/* Sentence Breakdown */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Sentence Breakdown</h2>
-        <div className="space-y-2">
+      <div className="border border-brand-text/10 bg-white p-8">
+        <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest mb-6">Line-by-Line Breakdown</h2>
+        <div className="space-y-0">
           {data.sentence_analysis.map((item, i) => (
-            <div key={i} className="flex items-start gap-4 p-3 rounded-lg hover:bg-zinc-800/50 transition">
-              <div className={`mt-1.5 h-2 w-2 rounded-full flex-shrink-0
-                ${item.sentiment === 'Positive' ? 'bg-emerald-500' : 
-                  item.sentiment === 'Negative' ? 'bg-red-500' : 
-                  'bg-zinc-500'}`} 
+            <div key={i} className="flex items-start gap-6 border-b border-brand-text/10 last:border-0 py-4">
+              <div className={`mt-2 h-2 w-2 flex-shrink-0
+                ${item.sentiment === 'Positive' ? 'bg-brand-positive' : 
+                  item.sentiment === 'Negative' ? 'bg-brand-negative' : 
+                  'bg-brand-neutral'}`} 
               />
-              <p className="text-sm text-zinc-300 leading-relaxed">{item.sentence}</p>
+              <p className="text-brand-text font-serif text-lg leading-relaxed">{item.sentence}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-center pt-8 pb-12">
+      <div className="flex justify-center pt-8 pb-16">
         <button 
           onClick={() => { setFile(null); setData(null); }}
-          className="text-sm font-medium text-zinc-400 hover:text-white transition"
+          className="text-xs font-semibold text-brand-accent uppercase tracking-widest hover:opacity-70 transition"
         >
           Analyze Another Transcript
         </button>

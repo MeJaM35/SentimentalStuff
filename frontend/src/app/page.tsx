@@ -15,7 +15,6 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // For POC, register the mock user if they don't exist yet, ignoring conflicts
       await fetch("http://localhost:8000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,38 +45,38 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl bg-zinc-900 p-8 shadow-xl border border-zinc-800">
-        <h1 className="mb-2 text-3xl font-bold tracking-tight text-white">Welcome back</h1>
-        <p className="mb-8 text-sm text-zinc-400">Enter your credentials to access the dashboard.</p>
+      <div className="w-full max-w-md bg-white p-10 border border-brand-text/10">
+        <h1 className="mb-2 text-4xl font-serif text-brand-text">SentimentalStuff</h1>
+        <p className="mb-10 text-sm text-brand-muted">Enter your credentials to access the workspace.</p>
         
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
+            <label className="block text-xs font-semibold text-brand-muted uppercase tracking-wider mb-2">Email</label>
             <input 
               type="email" 
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg bg-zinc-950 border border-zinc-800 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              className="w-full bg-brand-bg border border-brand-text/10 p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
               placeholder="agent@company.com" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Password</label>
+            <label className="block text-xs font-semibold text-brand-muted uppercase tracking-wider mb-2">Password</label>
             <input 
               type="password" 
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg bg-zinc-950 border border-zinc-800 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              className="w-full bg-brand-bg border border-brand-text/10 p-3 text-brand-text focus:outline-none focus:border-brand-accent transition-colors" 
               placeholder="••••••••" 
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-brand-negative text-sm">{error}</p>}
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full rounded-lg bg-blue-600 p-3 font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-brand-accent p-4 font-semibold text-white hover:bg-opacity-90 transition disabled:opacity-50"
           >
             {loading ? "Authenticating..." : "Sign In"}
           </button>
