@@ -1,0 +1,11 @@
+Agent: Hi there, welcome to CloudSync Sales. I'm Sarah, how can I assist you today?
+Customer: Hi Sarah! I was looking at your enterprise plan on the website, and I had a few questions about the storage limits.
+Agent: I'd be happy to help with that! The enterprise plan comes with 10 terabytes of shared storage out of the box. How much storage are you currently using?
+Customer: We are a small design agency, so we have a lot of large video files. We're currently sitting at about 8 terabytes, but we are growing fast.
+Agent: That's amazing to hear! For fast-growing teams, the 10TB is a great start. If you ever exceed that limit, we offer automatic scaling at just $5 per additional terabyte per month. You'll never be locked out from uploading.
+Customer: Oh, that's incredibly helpful. Our current provider just freezes our account when we hit the limit, which halts our entire workflow.
+Agent: That sounds very frustrating! We designed our scaling specifically to prevent those kinds of bottlenecks. Would you like me to send you a link to start a 14-day free trial so your team can test the upload speeds?
+Customer: Yes, please! That sounds perfect.
+Agent: Excellent, I've just emailed that to you. Let me know if you have any trouble setting it up.
+Customer: Got it. Thanks so much for your help, Sarah!
+Agent: You're very welcome. Have a wonderful day!

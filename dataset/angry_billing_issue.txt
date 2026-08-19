@@ -1,0 +1,11 @@
+Agent: Hello, thank you for calling TechStream support. My name is Alex. How can I help you today?
+Customer: Finally! I've been on hold for thirty minutes. You guys overcharged me by $50 this month and I want a refund right now. This is ridiculous!
+Agent: I am very sorry for the long wait and the unexpected charge on your bill. I understand why you are frustrated. Let me pull up your account and get this sorted out immediately. Can I have your account number?
+Customer: It's 987654321. I'm telling you, if this isn't fixed today, I'm cancelling my subscription.
+Agent: I completely understand, and I apologize again for the inconvenience. Looking at your account, it seems a late fee was applied by mistake due to a glitch in our auto-pay system. I am waiving that $50 fee right now.
+Customer: Well... okay. Are you sure it's removed?
+Agent: Yes, I have processed the refund. You should see the $50 back on your card in 3 to 5 business days, and I've also added a $10 credit to your next month's bill for the trouble.
+Customer: Oh. Well, thank you. I appreciate you fixing it so fast.
+Agent: You're very welcome. I've noted the account to ensure this doesn't happen again. Is there anything else I can assist you with today?
+Customer: No, that's all. Thank you, Alex.
+Agent: Have a great rest of your day!
