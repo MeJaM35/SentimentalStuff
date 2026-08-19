@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.venv/
+venv/
+node_modules/
+.next/
+backend/test.db
+*.db
+gemini_creds.txt

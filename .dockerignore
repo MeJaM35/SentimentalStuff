@@ -1,0 +1,10 @@
+.git
+.env
+.venv/
+__pycache__/
+node_modules/
+.next/
+backend/test.db
+*.db
+README.md
+plan.md
