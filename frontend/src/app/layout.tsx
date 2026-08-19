@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sentiment Analyzer",
+  title: "Sentimental Stuff",
   description: "AI-powered customer service sentiment analysis",
 };
 

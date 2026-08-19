@@ -1,4 +1,4 @@
-# Agentic CX Sentiment Analyzer (POC)
+# Sentimental Stuff (POC)
 
 An end-to-end full-stack application that analyzes customer support transcripts to extract actionable intelligence, sentiment flow, and derived Key Performance Indicators (KPIs) using Google's Gemini AI.
 
@@ -19,25 +19,18 @@ GEMINI_API_KEY=your_api_key_here
 GEMINI_MODEL=gemini-3.7-flash
 ```
 
-### 2. Start the Backend (FastAPI)
-Open a terminal, navigate to the `backend` folder, and start the Python server:
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-*The backend will be running at `http://localhost:8000`.*
+### 2. Start the Application (Docker Compose)
+The easiest way to run the entire Full-Stack application is using Docker. Ensure you have Docker and Docker Compose installed, then run from the root directory:
 
-### 3. Start the Frontend (Next.js)
-Open a new, separate terminal, navigate to the `frontend` folder, and start the Node server:
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose up --build
 ```
-*The frontend will be running at `http://localhost:3000`.*
+
+Docker will automatically build the Next.js frontend and the FastAPI backend concurrently.
+* The frontend UI will be available at `http://localhost:3000`.
+* The API will be available at `http://localhost:8000`.
+
+*(Note: If you update `package.json` in the future and Next.js fails to compile, run `docker compose down -v` to clear the cached volumes before building again).*
 
 ## How to Use
 1. Navigate to `http://localhost:3000` in your browser.
