@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Moon, Sun, User, FileJson, X, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function Header() {
   const [theme, setTheme] = useState("light");
   const [user, setUser] = useState<{ email: string } | null>(null);
@@ -20,7 +22,7 @@ export default function Header() {
     // Fetch user
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:8000/users/me", {
+      fetch(`${API_URL}/users/me`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -51,7 +53,7 @@ export default function Header() {
   };
 
   return (
-    <header className="mb-12 flex items-center justify-between border-b border-brand-border pb-6 relative">
+    <header className="mb-12 flex items-center justify-between border-b border-brand-border pb-6 relative print:hidden">
       <div className="flex items-baseline gap-4">
         <h1 className="text-3xl font-serif text-brand-text">Sentimental Stuff</h1>
         <span className="text-sm text-brand-muted hidden sm:inline-block border-l border-brand-border pl-4">Insights Workspace</span>
@@ -113,7 +115,7 @@ export default function Header() {
               <div>
                 <h3 className="text-sm font-semibold text-brand-text mb-1">Example cURL</h3>
                 <pre className="block bg-brand-bg border border-brand-border p-4 text-xs text-brand-text font-mono overflow-x-auto">
-{`curl -X POST "http://localhost:8000/analyze" \\
+{`curl -X POST "${API_URL}/analyze" \\
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \\
   -H "Content-Type: multipart/form-data" \\
   -F "file=@/path/to/your/transcript.txt"`}

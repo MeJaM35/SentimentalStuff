@@ -4,12 +4,15 @@ import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, RefreshCw, Code } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const N8N_URL = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "http://localhost:5678/webhook/analyze";
+
 type AnalysisData = {
   thought_process: string;
   overall_sentiment: string;
   summary: string;
   emotions: string[];
-  sentence_analysis: { sentence: string; sentiment: string }[];
+  sentence_analysis: { sentence: string; sentiment: string; emotion?: string }[];
   kpis: {
     Agent_Empathy_Score: number;
     Customer_Frustration_Index: number;
@@ -64,6 +67,7 @@ Agent: Have a great rest of your day!`
 export default function DashboardUI() {
   const [file, setFile] = useState<File | null>(null);
   const [enableEval, setEnableEval] = useState<boolean>(false);
+  const [useN8n, setUseN8n] = useState<boolean>(false);
   const [threshold, setThreshold] = useState<number>(7);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -88,19 +92,35 @@ export default function DashboardUI() {
     setLoading(true);
     setError("");
     setShowRaw(false);
-    
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("threshold", enableEval ? threshold.toString() : "0");
 
     try {
-      const res = await fetch("http://localhost:8000/analyze", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
-      });
+      let res;
+      if (useN8n) {
+        const text = await file.text();
+        res = await fetch(N8N_URL, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            transcript: text,
+            threshold: enableEval ? threshold : 0
+          })
+        });
+      } else {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("threshold", enableEval ? threshold.toString() : "0");
+
+        res = await fetch(`${API_URL}/analyze`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: formData
+        });
+      }
 
       if (!res.ok) {
         if (res.status === 401) router.push("/");
@@ -149,6 +169,16 @@ export default function DashboardUI() {
                   className="w-4 h-4 accent-brand-accent cursor-pointer"
                 />
                 Enable QA Agent Self-Correction
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-brand-text">
+                <input 
+                  type="checkbox" 
+                  checked={useN8n} 
+                  onChange={(e) => setUseN8n(e.target.checked)}
+                  className="w-4 h-4 accent-brand-accent cursor-pointer"
+                />
+                Route to n8n AI Pipeline
               </label>
 
               {enableEval && (
@@ -233,7 +263,7 @@ export default function DashboardUI() {
               <h2 className="text-xs font-semibold text-brand-muted uppercase tracking-widest">Conversation Summary</h2>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 print:hidden">
               <button 
                 onClick={() => setShowRaw(!showRaw)}
                 className="flex items-center gap-1 text-xs border border-brand-border px-3 py-1 hover:bg-brand-bg text-brand-text transition"
@@ -371,13 +401,18 @@ export default function DashboardUI() {
         <div className="space-y-0">
           {(data.sentence_analysis || []).map((item, i) => (
             <div key={i} className="flex flex-col md:flex-row items-start gap-4 md:items-center border-b border-brand-border last:border-0 py-6">
-              <div className="w-24 flex-shrink-0">
-                <span className={`inline-block px-3 py-1 text-[10px] uppercase tracking-wider font-bold border
+              <div className="w-28 flex-shrink-0 flex flex-col gap-2">
+                <span className={`inline-block px-3 py-1 text-[10px] uppercase tracking-wider font-bold border text-center
                   ${item.sentiment === 'Positive' ? 'text-brand-positive border-brand-positive/30 bg-brand-positive/10' : 
                     item.sentiment === 'Negative' ? 'text-brand-negative border-brand-negative/30 bg-brand-negative/10' : 
                     'text-brand-muted border-brand-border bg-brand-bg'}`}>
                   {item.sentiment}
                 </span>
+                {item.emotion && item.emotion.toLowerCase() !== 'none' && (
+                  <span className="inline-block px-2 py-1 text-[9px] uppercase tracking-wider font-semibold border border-brand-border text-brand-text bg-brand-surface text-center overflow-hidden text-ellipsis whitespace-nowrap">
+                    {item.emotion}
+                  </span>
+                )}
               </div>
               <p className="text-brand-text font-serif text-lg leading-relaxed flex-1">{item.sentence}</p>
             </div>
@@ -385,10 +420,16 @@ export default function DashboardUI() {
         </div>
       </div>
 
-      <div className="flex justify-center pt-8 pb-16">
+      <div className="flex justify-center pt-8 pb-16 print:hidden gap-4">
+        <button 
+          onClick={() => window.print()}
+          className="text-xs font-semibold text-brand-text border border-brand-border px-6 py-2 uppercase tracking-widest hover:bg-brand-bg transition"
+        >
+          Export to PDF
+        </button>
         <button 
           onClick={() => { setFile(null); setData(null); }}
-          className="text-xs font-semibold text-brand-accent uppercase tracking-widest hover:opacity-70 transition"
+          className="text-xs font-semibold text-brand-accent border border-brand-accent px-6 py-2 uppercase tracking-widest hover:bg-brand-accent hover:text-white transition"
         >
           Analyze Another Transcript
         </button>
